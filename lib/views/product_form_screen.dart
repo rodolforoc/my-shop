@@ -24,7 +24,20 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   }
 
   void updateImageURL() {
-    setState(() {});
+    if (isValidImageUrl(_imageURLController.text)) {
+      setState(() {});
+    }
+  }
+
+  bool isValidImageUrl(String url) {
+    bool isValidProtocol = url.toLowerCase().startsWith('http://') ||
+        url.toLowerCase().startsWith('https://');
+
+    bool isValidImageExtension = url.toLowerCase().endsWith('.png') ||
+        url.toLowerCase().endsWith('.jpg') ||
+        url.toLowerCase().endsWith('.jpeg');
+
+    return isValidProtocol && isValidImageExtension;
   }
 
   @override
@@ -35,6 +48,9 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   }
 
   void _saveForm() {
+    if (_form.currentState.validate()) {
+      return;
+    }
     _form.currentState.save();
 
     final newProduct = Product(
@@ -71,6 +87,19 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                 decoration: InputDecoration(labelText: 'Título'),
                 textInputAction: TextInputAction.next,
                 onSaved: (value) => _formData['title'] = value,
+                validator: (value) {
+                  bool isEmpty = value.trim().isEmpty;
+                  bool isInvalid = value.trim().length < 3;
+                  if (isEmpty) {
+                    return 'Informe um título válido';
+                  }
+
+                  if (isInvalid) {
+                    return 'Informe um título com no mínimo 3 letras';
+                  }
+
+                  return null;
+                },
               ),
               TextFormField(
                 decoration: InputDecoration(labelText: 'Preço'),
@@ -79,12 +108,36 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                 ),
                 textInputAction: TextInputAction.next,
                 onSaved: (value) => _formData['price'] = double.parse(value),
+                validator: (value) {
+                  bool isEmpty = value.trim().isEmpty;
+                  var newPrice = double.tryParse(value);
+                  bool isInvalid = newPrice == null || newPrice < 0;
+
+                  if (isEmpty || isInvalid) {
+                    return 'Informe um preço válido';
+                  }
+
+                  return null;
+                },
               ),
               TextFormField(
                 decoration: InputDecoration(labelText: 'Descrição'),
                 maxLines: 3,
                 keyboardType: TextInputType.multiline,
                 onSaved: (value) => _formData['description'] = value,
+                validator: (value) {
+                  bool isEmpty = value.trim().isEmpty;
+                  bool isInvalid = value.trim().length < 10;
+                  if (isEmpty) {
+                    return 'Informe uma descrição válida';
+                  }
+
+                  if (isInvalid) {
+                    return 'Informe um título com no mínimo 10 letras';
+                  }
+
+                  return null;
+                },
               ),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -100,6 +153,16 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
                         _saveForm();
                       },
                       onSaved: (value) => _formData['imageUrl'] = value,
+                      validator: (value) {
+                        bool isEmpty = value.trim().isEmpty;
+                        bool isInvalid = !isValidImageUrl(value);
+
+                        if (isEmpty || isInvalid) {
+                          return 'Informe uma URL válida';
+                        }
+
+                        return null;
+                      },
                     ),
                   ),
                   Container(
