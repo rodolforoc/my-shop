@@ -116,8 +116,8 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       setState(() {
         _isLoading = false;
       });
+      Navigator.of(context).pop();
     }
-    Navigator.of(context).pop();
   }
 
   @override
