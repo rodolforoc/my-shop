@@ -18,12 +18,11 @@ class Products with ChangeNotifier {
     return _items.where((element) => element.isFavorite).toList();
   }
 
-  Future<void> addProduct(Product newProduct) {
+  Future<void> addProduct(Product newProduct) async {
     const url =
         'https://my-shop-cef8e-default-rtdb.firebaseio.com/products.json';
 
-    return http
-        .post(
+    final response = await http.post(
       url,
       body: json.encode({
         'title': newProduct.title,
@@ -32,17 +31,16 @@ class Products with ChangeNotifier {
         'imageUrl': newProduct.imageUrl,
         'isFavorite': newProduct.isFavorite,
       }),
-    )
-        .then((res) {
-      _items.add(Product(
-        id: json.decode(res.body)['name'],
-        title: newProduct.title,
-        price: newProduct.price,
-        description: newProduct.description,
-        imageUrl: newProduct.imageUrl,
-      ));
-      notifyListeners();
-    });
+    );
+
+    _items.add(Product(
+      id: json.decode(response.body)['name'],
+      title: newProduct.title,
+      price: newProduct.price,
+      description: newProduct.description,
+      imageUrl: newProduct.imageUrl,
+    ));
+    notifyListeners();
   }
 
   void updateProduct(Product product) {
