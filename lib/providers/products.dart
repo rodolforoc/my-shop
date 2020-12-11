@@ -1,8 +1,9 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:shop/exceptions/http_exception.dart';
-import 'product.dart';
+import './product.dart';
 
 class Products with ChangeNotifier {
   final String _baseUrl =
@@ -16,29 +17,27 @@ class Products with ChangeNotifier {
   }
 
   List<Product> get favoriteItems {
-    return _items.where((element) => element.isFavorite).toList();
+    return _items.where((prod) => prod.isFavorite).toList();
   }
 
   Future<void> loadProducts() async {
     final response = await http.get("$_baseUrl.json");
-    _items.clear();
-
     Map<String, dynamic> data = json.decode(response.body);
 
+    _items.clear();
     if (data != null) {
       data.forEach((productId, productData) {
         _items.add(Product(
-          id: json.decode(response.body)['name'],
+          id: productId,
           title: productData['title'],
-          price: productData['price'],
           description: productData['description'],
+          price: productData['price'],
           imageUrl: productData['imageUrl'],
           isFavorite: productData['isFavorite'],
         ));
       });
+      notifyListeners();
     }
-
-    notifyListeners();
     return Future.value();
   }
 
@@ -57,8 +56,8 @@ class Products with ChangeNotifier {
     _items.add(Product(
       id: json.decode(response.body)['name'],
       title: newProduct.title,
-      price: newProduct.price,
       description: newProduct.description,
+      price: newProduct.price,
       imageUrl: newProduct.imageUrl,
     ));
     notifyListeners();
@@ -87,10 +86,8 @@ class Products with ChangeNotifier {
 
   Future<void> deleteProduct(String id) async {
     final index = _items.indexWhere((prod) => prod.id == id);
-
     if (index >= 0) {
       final product = _items[index];
-
       _items.remove(product);
       notifyListeners();
 
@@ -99,8 +96,20 @@ class Products with ChangeNotifier {
       if (response.statusCode >= 400) {
         _items.insert(index, product);
         notifyListeners();
-        throw HttpException('Ocorreu um erro na exclusão do produto');
+        throw HttpException('Ocorreu um erro na exclusão do produto.');
       }
     }
   }
 }
+
+// bool _showFavoriteOnly = false;
+
+// void showFavoriteOnly() {
+//   _showFavoriteOnly = true;
+//   notifyListeners();
+
+// }
+// void showAll() {
+//   _showFavoriteOnly = false;
+//   notifyListeners();
+// }
