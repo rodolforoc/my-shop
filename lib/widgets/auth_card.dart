@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth.dart';
 
 enum AuthMode {
   Signup,
@@ -21,7 +23,7 @@ class _AuthCardState extends State<AuthCard> {
     'password': '',
   };
 
-  void _submit() {
+  Future<void> _submit() async {
     if (!_form.currentState.validate()) {
       return;
     }
@@ -31,8 +33,19 @@ class _AuthCardState extends State<AuthCard> {
 
     _form.currentState.save();
 
+    Auth auth = Provider.of<Auth>(context, listen: false);
+
     if (_authMode == AuthMode.Login) {
-    } else {}
+      await auth.signin(
+        _authData['email'],
+        _authData['password'],
+      );
+    } else {
+      await auth.signup(
+        _authData['email'],
+        _authData['password'],
+      );
+    }
 
     setState(() {
       _isLoading = false;
@@ -72,6 +85,7 @@ class _AuthCardState extends State<AuthCard> {
                   labelText: 'E-mail',
                 ),
                 keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
                 validator: (value) {
                   if (value.isEmpty || !value.contains('@')) {
                     return "Informe um email válido";
@@ -86,6 +100,9 @@ class _AuthCardState extends State<AuthCard> {
                 decoration: InputDecoration(
                   labelText: 'Senha',
                 ),
+                textInputAction: _authMode == AuthMode.Login
+                    ? TextInputAction.done
+                    : TextInputAction.next,
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
                   if (value.isEmpty || value.length < 5) {
