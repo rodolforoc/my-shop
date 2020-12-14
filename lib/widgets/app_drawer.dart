@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../utils/app_routes.dart';
-import '../views/products_screen.dart';
 
 class AppDrawer extends StatelessWidget {
   @override
@@ -18,7 +17,7 @@ class AppDrawer extends StatelessWidget {
             title: Text('Loja'),
             onTap: () {
               Navigator.of(context).pushReplacementNamed(
-                AppRoutes.HOME,
+                AppRoutes.AUTH_HOME,
               );
             },
           ),
